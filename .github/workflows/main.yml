@@ -1,51 +1,7 @@
-name: PHP CI Smoke Test
+    - name: Start PHP server
+      run: |
+        php -S 127.0.0.1:8000 -t login > server.log 2>&1 &
+        sleep 3
 
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-
-jobs:
-  php-smoke:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-
-      - name: PHP Syntax Check
-        run: |
-          find . -type f -name "*.php" -print0 | xargs -0 -n1 php -l
-
-      - name: Create/Overwrite smoke test script
-        run: |
-          cat > tests/smoke.sh << 'EOF'
-          #!/bin/bash
-          set -e
-          BASE="http://127.0.0.1:8000"
-
-          echo "Testing signup.php ..."
-          curl -fsS "$BASE/signup.php" >/dev/null
-
-          echo "Testing login.php ..."
-          curl -fsS "$BASE/login.php" >/dev/null
-
-          echo "Smoke test PASSED."
-          EOF
-          chmod +x tests/smoke.sh
-
-      - name: Start PHP server and run tests
-        run: |
-          nohup php -S 0.0.0.0:8000 -t . > server.log 2>&1 &
-          sleep 3
-
-          echo "===== server.log ====="
-          tail -n 100 server.log
-
-          bash tests/smoke.sh
+    - name: Run smoke tests
+      run: bash tests/smoke.sh
