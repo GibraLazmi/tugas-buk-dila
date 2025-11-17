@@ -1,7 +1,48 @@
-    - name: Start PHP server
-      run: |
-        php -S 127.0.0.1:8000 -t login > server.log 2>&1 &
-        sleep 3
+name: php-smoke
 
-    - name: Run smoke tests
-      run: bash tests/smoke.sh
+on:
+  push:
+  pull_request:
+
+jobs:
+  php-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      # 3. PHP Syntax Check
+      - name: PHP Syntax Check
+        run: |
+          find . -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      # 4. Pastikan folder tests benar
+      - name: Show tests folder structure
+        run: |
+          echo "Isi folder tests:"
+          ls -R tests || echo "Folder tests tidak ditemukan!"
+
+      # 5. Start PHP Built-in Server
+      - name: Start PHP server
+        run: |
+          php -S 127.0.0.1:8000 -t login > server.log 2>&1 &
+          sleep 3
+
+      # 6. Run Smoke Tests
+      - name: Run smoke tests
+        run: |
+          chmod +x tests/smoke.sh
+          bash tests/smoke.sh
+
+      # 7. Tampilkan server log jika error
+      - name: Show server log
+        if: failure()
+        run: cat server.log
