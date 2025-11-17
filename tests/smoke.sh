@@ -9,4 +9,4 @@ curl -f $URL/signup.php > /dev/null
 echo "Testing login.php..."
 curl -f $URL/login.php > /dev/null
 
-echo "All tests passed!"
+echo "✔ All smoke tests passed!"
